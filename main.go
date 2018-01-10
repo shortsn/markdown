@@ -14,21 +14,7 @@ import (
 func main() {
 	app := cli.App("markdown", "")
 
-	app.Spec = "[-v]"
-
-	var (
-		verbose = app.BoolOpt("v verbose", false, "Verbose debug mode")
-	)
-
-	app.Before = func() {
-		if *verbose {
-			// Here you can enable debug output in your logger for example
-			fmt.Println("Verbose mode enabled")
-		}
-	}
-
 	app.Command("html", "", func(cmd *cli.Cmd) {
-
 		var (
 			inputFile = cmd.StringOpt("f file", "", "file to convert")
 		)
@@ -47,7 +33,6 @@ func main() {
 					os.Exit(-1)
 				}
 			default:
-
 				if input, err = ioutil.ReadFile(*inputFile); err != nil {
 					fmt.Fprintln(os.Stderr, "Error reading from", *inputFile, ":", err)
 					os.Exit(-1)
