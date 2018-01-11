@@ -32,10 +32,13 @@ func main() {
 
 			add.Action = func() {
 
-				if err := appendText(*targetFile, []byte("some text foobar")); err != nil {
+				if err := appendText(*targetFile, readStdin()); err != nil {
 					fmt.Fprintln(os.Stderr, "Error writing file text", err)
 					os.Exit(-1)
 				}
+
+				fmt.Fprintln(os.Stdout, *targetFile)
+				os.Exit(0)
 			}
 
 		})
@@ -65,7 +68,7 @@ func main() {
 						Flags: md.CommonHTMLFlags,
 					}))
 			output := md.Run(input, extensions, htmlRenderer)
-			fmt.Println(string(output))
+			fmt.Fprintln(os.Stdout, output)
 			os.Exit(0)
 		}
 
