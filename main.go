@@ -20,6 +20,12 @@ func main() {
 	app := cli.App(executableBasename, "")
 	app.Version("v version", "0.0.1")
 
+	app.Spec = "[-a]"
+
+	var (
+		absoluteFileNames = app.BoolOpt("a", false, "print absolute filenames")
+	)
+
 	app.Command("note", "", func(note *cli.Cmd) {
 
 		note.Command("add", "", func(add *cli.Cmd) {
@@ -41,7 +47,7 @@ func main() {
 					os.Exit(-1)
 				}
 
-				fmt.Fprintln(os.Stdout, *targetFile)
+				printFileName(*targetFile, *absoluteFileNames)
 				os.Exit(0)
 			}
 
@@ -67,7 +73,6 @@ func main() {
 			}
 
 			for _, inputFile := range *inputFiles {
-				inputFile, _ = filepath.Abs(inputFile)
 				outputFile := strings.Replace(inputFile, filepath.Ext(inputFile), ".html", -1)
 				content := readFile(inputFile)
 
@@ -76,7 +81,7 @@ func main() {
 					os.Exit(-1)
 				}
 
-				fmt.Fprintln(os.Stdout, outputFile)
+				printFileName(outputFile, *absoluteFileNames)
 			}
 
 			os.Exit(0)
@@ -85,6 +90,13 @@ func main() {
 	})
 
 	app.Run(os.Args)
+}
+
+func printFileName(fileName string, absolutePath bool) {
+	if absolutePath {
+		fileName, _ = filepath.Abs(fileName)
+	}
+	fmt.Fprintln(os.Stdout, fileName)
 }
 
 func convertToHTML(input []byte) []byte {
