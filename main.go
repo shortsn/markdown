@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/dimchansky/utfbom"
@@ -14,14 +15,17 @@ import (
 )
 
 func main() {
-	app := cli.App("markdown", "")
+	executableFullname, _ := os.Executable()
+	executableBasename := filepath.Base(executableFullname)
+	app := cli.App(executableBasename, "")
+	app.Version("v version", "0.0.1")
 
 	app.Command("note", "", func(note *cli.Cmd) {
 
 		note.Command("add", "", func(add *cli.Cmd) {
 
 			var (
-				targetFile = add.StringOpt("f file", "", "file")
+				targetFile = add.StringOpt("o output", "", "output file")
 			)
 
 			if *targetFile == "" {
@@ -46,35 +50,45 @@ func main() {
 	})
 
 	app.Command("html", "", func(html *cli.Cmd) {
+
 		var (
-			inputFile = html.StringOpt("f file", "", "file to convert")
+			inputFile = html.StringOpt("c convert", "", "file to convert")
 		)
 
 		html.Action = func() {
-			var (
-				input []byte
-			)
 
 			if *inputFile == "" {
-				input = readStdin()
-			} else {
-				input = readFile(*inputFile)
+				input := convertToHTML(readStdin())
+				fmt.Fprintln(os.Stdout, string(input))
+				os.Exit(0)
 			}
 
-			extensions := md.WithExtensions(md.CommonExtensions)
-			htmlRenderer := md.WithRenderer(
-				md.NewHTMLRenderer(
-					md.HTMLRendererParameters{
-						Flags: md.CommonHTMLFlags,
-					}))
-			output := md.Run(input, extensions, htmlRenderer)
-			fmt.Fprintln(os.Stdout, output)
+			*inputFile, _ = filepath.Abs(*inputFile)
+			outputFile := strings.Replace(*inputFile, filepath.Ext(*inputFile), ".html", -1)
+			content := readFile(*inputFile)
+
+			if err := ioutil.WriteFile(outputFile, content, 0644); err != nil {
+				fmt.Fprintln(os.Stderr, "Error writing file", err)
+				os.Exit(-1)
+			}
+
+			fmt.Fprintln(os.Stdout, outputFile)
 			os.Exit(0)
 		}
 
 	})
 
 	app.Run(os.Args)
+}
+
+func convertToHTML(input []byte) []byte {
+	extensions := md.WithExtensions(md.CommonExtensions)
+	htmlRenderer := md.WithRenderer(
+		md.NewHTMLRenderer(
+			md.HTMLRendererParameters{
+				Flags: md.CommonHTMLFlags,
+			}))
+	return md.Run(input, extensions, htmlRenderer)
 }
 
 func readStdin() []byte {
