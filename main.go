@@ -49,30 +49,36 @@ func main() {
 
 	})
 
-	app.Command("html", "", func(html *cli.Cmd) {
+	app.Command("convert", "", func(convert *cli.Cmd) {
+
+		convert.Spec = "[-s | FILES...]"
 
 		var (
-			inputFile = html.StringOpt("c convert", "", "file to convert")
+			fromStdin  = convert.BoolOpt("s stdin", false, "")
+			inputFiles = convert.StringsArg("FILES", []string{}, "files to convert")
 		)
 
-		html.Action = func() {
+		convert.Action = func() {
 
-			if *inputFile == "" {
+			if *fromStdin {
 				input := convertToHTML(readStdin())
 				fmt.Fprintln(os.Stdout, string(input))
 				os.Exit(0)
 			}
 
-			*inputFile, _ = filepath.Abs(*inputFile)
-			outputFile := strings.Replace(*inputFile, filepath.Ext(*inputFile), ".html", -1)
-			content := readFile(*inputFile)
+			for _, inputFile := range *inputFiles {
+				inputFile, _ = filepath.Abs(inputFile)
+				outputFile := strings.Replace(inputFile, filepath.Ext(inputFile), ".html", -1)
+				content := readFile(inputFile)
 
-			if err := ioutil.WriteFile(outputFile, content, 0644); err != nil {
-				fmt.Fprintln(os.Stderr, "Error writing file", err)
-				os.Exit(-1)
+				if err := ioutil.WriteFile(outputFile, content, 0644); err != nil {
+					fmt.Fprintln(os.Stderr, "Error writing file", err)
+					os.Exit(-1)
+				}
+
+				fmt.Fprintln(os.Stdout, outputFile)
 			}
 
-			fmt.Fprintln(os.Stdout, outputFile)
 			os.Exit(0)
 		}
 
