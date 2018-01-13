@@ -11,7 +11,7 @@ import (
 
 	"github.com/dimchansky/utfbom"
 	"github.com/jawher/mow.cli"
-	md "gopkg.in/russross/blackfriday.v2"
+	md "github.com/shurcooL/github_flavored_markdown"
 )
 
 func main() {
@@ -66,17 +66,20 @@ func main() {
 
 		convert.Action = func() {
 
+			*fromStdin = len(*inputFiles) == 0
+
 			if *fromStdin {
-				input := convertToHTML(readStdin())
-				fmt.Fprintln(os.Stdout, string(input))
+				input := readStdin()
+				html := convertToHTML(input)
+				fmt.Fprintln(os.Stdout, string(html))
 				os.Exit(0)
 			}
 
 			for _, inputFile := range *inputFiles {
 				outputFile := strings.Replace(inputFile, filepath.Ext(inputFile), ".html", -1)
-				content := readFile(inputFile)
-
-				if err := ioutil.WriteFile(outputFile, content, 0644); err != nil {
+				input := readFile(inputFile)
+				html := convertToHTML(input)
+				if err := ioutil.WriteFile(outputFile, html, 0644); err != nil {
 					fmt.Fprintln(os.Stderr, "Error writing file", err)
 					os.Exit(-1)
 				}
@@ -100,13 +103,7 @@ func printFileName(fileName string, absolutePath bool) {
 }
 
 func convertToHTML(input []byte) []byte {
-	extensions := md.WithExtensions(md.CommonExtensions)
-	htmlRenderer := md.WithRenderer(
-		md.NewHTMLRenderer(
-			md.HTMLRendererParameters{
-				Flags: md.CommonHTMLFlags,
-			}))
-	return md.Run(input, extensions, htmlRenderer)
+	return md.Markdown(input)
 }
 
 func readStdin() []byte {
