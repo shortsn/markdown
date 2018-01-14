@@ -60,15 +60,33 @@ func main() {
 
 	app.Command("serve", "", func(serve *cli.Cmd) {
 
-		http.HandleFunc("/gfm.css", func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprint(w, gfm)
-		})
+		var (
+			inputFiles = serve.StringsArg("FILES", []string{}, "files to convert")
+		)
 
-		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
-		})
+		serve.Action = func() {
 
-		http.ListenAndServe("127.0.0.1:8080", nil)
+			http.HandleFunc("/gfm.css", func(w http.ResponseWriter, r *http.Request) {
+				fmt.Fprint(w, gfm)
+			})
+
+			http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+				fileName := r.URL.Path[1:]
+				for _, file := range *inputFiles {
+
+					if fileName == file {
+						fmt.Fprint(w, fileName)
+						return
+					}
+				}
+
+				w.WriteHeader(http.StatusNotFound)
+				fmt.Fprint(w, "404")
+				fmt.Fprintf(os.Stderr, "Not found %s", fileName)
+			})
+
+			http.ListenAndServe("127.0.0.1:8080", nil)
+		}
 
 	})
 
