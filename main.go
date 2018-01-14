@@ -78,7 +78,7 @@ func main() {
 				for _, file := range *inputFiles {
 
 					if strings.EqualFold(fileName, file) {
-						io.WriteString(w, `<html><head><meta charset="utf-8"><link href="/gfm.css" media="all" rel="stylesheet" type="text/css" /><link href="//cdnjs.cloudflare.com/ajax/libs/octicons/2.1.2/octicons.css" media="all" rel="stylesheet" type="text/css" /></head><body><article class="markdown-body entry-content" style="padding: 30px;">`)
+						io.WriteString(w, `<html><head><meta charset="utf-8"><link href="/gfm.css" media="all" rel="stylesheet" type="text/css" /></head><body><article class="markdown-body entry-content" style="padding: 30px;">`)
 						w.Write(convertToHTML(readFile(fileName)))
 						io.WriteString(w, `</article></body></html>`)
 						return
