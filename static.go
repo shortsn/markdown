@@ -1,7 +1,7 @@
-package main
+package main 
 
 const (
-	gfm = `/* Basic adjustments for text and link colors, etc. */
+gfm = `/* Basic adjustments for text and link colors, etc. */
 .markdown-body {
   color: #373a3c;
 }

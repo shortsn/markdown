@@ -13,7 +13,6 @@ import (
 
 	"github.com/dimchansky/utfbom"
 	"github.com/jawher/mow.cli"
-	md "github.com/shurcooL/github_flavored_markdown"
 )
 
 //go:generate go run scripts/includestatic.go
@@ -140,10 +139,6 @@ func printFileName(fileName string, absolutePath bool) {
 		fileName, _ = filepath.Abs(fileName)
 	}
 	fmt.Fprintln(os.Stdout, fileName)
-}
-
-func convertToHTML(input []byte) []byte {
-	return md.Markdown(input)
 }
 
 func readStdin() []byte {
