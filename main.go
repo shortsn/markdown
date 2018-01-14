@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +14,8 @@ import (
 	"github.com/jawher/mow.cli"
 	md "github.com/shurcooL/github_flavored_markdown"
 )
+
+//go:generate go run scripts/includestatic.go
 
 func main() {
 	executableFullname, _ := os.Executable()
@@ -52,6 +55,20 @@ func main() {
 			}
 
 		})
+
+	})
+
+	app.Command("serve", "", func(serve *cli.Cmd) {
+
+		http.HandleFunc("/gfm.css", func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprint(w, gfm)
+		})
+
+		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
+		})
+
+		http.ListenAndServe("127.0.0.1:8080", nil)
 
 	})
 
