@@ -16,7 +16,6 @@ import (
 	"github.com/sourcegraph/annotate"
 	"github.com/sourcegraph/syntaxhighlight"
 	"golang.org/x/net/html"
-	"golang.org/x/net/html/atom"
 )
 
 const commonHTMLFlags = 0 |
@@ -44,29 +43,6 @@ func convertToHTML(text []byte) []byte {
 	unsanitized := blackfriday.Markdown(text, renderer, commonExtensions)
 	sanitized := policy.SanitizeBytes(unsanitized)
 	return sanitized
-}
-
-// Heading returns a heading HTML node with title text.
-// The heading comes with an anchor based on the title.
-//
-// heading can be one of atom.H1, atom.H2, atom.H3, atom.H4, atom.H5, atom.H6.
-func Heading(heading atom.Atom, title string) *html.Node {
-	aName := sanitized_anchor_name.Create(title)
-	a := &html.Node{
-		Type: html.ElementNode, Data: atom.A.String(),
-		Attr: []html.Attribute{
-			{Key: atom.Name.String(), Val: aName},
-			{Key: atom.Class.String(), Val: "anchor"},
-			{Key: atom.Href.String(), Val: "#" + aName},
-			{Key: atom.Rel.String(), Val: "nofollow"},
-			{Key: "aria-hidden", Val: "true"},
-		},
-	}
-
-	h := &html.Node{Type: html.ElementNode, Data: heading.String()}
-	h.AppendChild(a)
-	h.AppendChild(&html.Node{Type: html.TextNode, Data: title})
-	return h
 }
 
 // policy for GitHub Flavored Markdown-like sanitization.
