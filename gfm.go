@@ -62,7 +62,6 @@ type renderer struct {
 	*blackfriday.Html
 }
 
-// GitHub Flavored Markdown heading with clickable and hidden anchor.
 func (*renderer) Header(out *bytes.Buffer, text func() bool, level int, _ string) {
 	marker := out.Len()
 	doubleSpace(out)
@@ -85,7 +84,7 @@ func (*renderer) Header(out *bytes.Buffer, text func() bool, level int, _ string
 	}
 	anchorName := sanitized_anchor_name.Create(textContent)
 
-	out.WriteString(fmt.Sprintf(`<h%d><a name="%s" class="anchor" href="#%s" rel="nofollow" aria-hidden="true"></a>`, level, anchorName, anchorName))
+	out.WriteString(fmt.Sprintf(`<h%d id="%s">`, level, anchorName))
 	out.WriteString(textHTML)
 	out.WriteString(fmt.Sprintf("</h%d>\n", level))
 }
@@ -103,7 +102,6 @@ func extractText(n *html.Node) string {
 	return out
 }
 
-// TODO: Clean up and improve this code.
 // GitHub Flavored Markdown fenced code block with highlighting.
 func (*renderer) BlockCode(out *bytes.Buffer, text []byte, lang string) {
 	doubleSpace(out)
@@ -260,7 +258,6 @@ func highlightCode(src []byte, lang string) (highlightedCode []byte, ok bool) {
 }
 
 // Unexported blackfriday helpers.
-
 func doubleSpace(out *bytes.Buffer) {
 	if out.Len() > 0 {
 		out.WriteByte('\n')
